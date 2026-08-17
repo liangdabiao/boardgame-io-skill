@@ -4,7 +4,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DuelMonsters } from '../src/game.js';
+import { JourneyWestDuel } from '../src/game.js';
 import { CARDS } from '../src/cards.js';
 import { Client } from 'boardgame.io/dist/esm/client.js';
 import { Local } from 'boardgame.io/dist/esm/multiplayer.js';
@@ -72,7 +72,7 @@ function autoTurn(client, playerID) {
 
 async function playFullGame(seed) {
   const spec = {
-    game: { ...DuelMonsters, seed },
+    game: { ...JourneyWestDuel, seed },
     multiplayer: Local(),
   };
   const p0 = Client({ ...spec, playerID: '0' });

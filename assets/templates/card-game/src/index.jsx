@@ -1,42 +1,104 @@
-// 类游戏王卡牌对战 —— 本地双人对决（Local 多人模式，双方各一个视角）。
-// 使用 Local() 时 playerView 生效：每个视角只能看到自己的手牌。
+// 西游斗法 · 人机对战 —— 人类执「取经人」（玩家 0），AI 执「妖魔主」（玩家 1）。
+//
+// 音频：BGM（apiz 生成的国风战斗曲）+ Web Audio 合成音效（sfx.js）。
+// 浏览器自动播放策略：BGM 在首次交互后开始播放。
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Client } from 'boardgame.io/react';
 import { Local } from 'boardgame.io/multiplayer';
-import { DuelMonsters } from './game.js';
+import { JourneyWestDuel } from './game.js';
 import Board from './board.jsx';
+import { createBotClient } from './bot.js';
+import { setSfx, sfxEnabled } from './sfx.js';
 import './app.css';
 
+const bgmUrl = new URL('./assets/audio/bgm.mp3', import.meta.url).href;
+
+const mp = Local();
+
 const App = Client({
-  game: DuelMonsters,
+  game: JourneyWestDuel,
   board: Board,
-  multiplayer: Local(),
-  debug: false, // 关闭悬浮调试面板：它会覆盖在棋盘上拦截点击，正式游玩不需要
+  multiplayer: mp,
+  debug: false,
 });
 
 function Page() {
-  // 换 matchID + key 重挂载 = 在 Local master 上开一局全新对局
   const [matchN, setMatchN] = useState(0);
+  const [musicOn, setMusicOn] = useState(
+    JSON.parse(localStorage.getItem('west-bgm') ?? 'true')
+  );
+  const [sndOn, setSndOn] = useState(sfxEnabled());
+  const bgmRef = useRef(null);
+  const matchID = `west-ai-${matchN}`;
+
+  // 每局创建一个 AI 客户端，换局时停掉旧的
+  useEffect(() => {
+    const bot = createBotClient({
+      game: JourneyWestDuel,
+      multiplayer: mp,
+      matchID,
+      playerID: '1',
+      delayMs: 1100, // 与演出时长匹配：看清一步再走下一步
+    });
+    return () => bot.stop();
+  }, [matchID]);
+
+  // BGM：首次交互后播放（浏览器自动播放策略），音量压低不抢戏
+  useEffect(() => {
+    const start = () => {
+      const el = bgmRef.current;
+      if (!el) return;
+      el.volume = 0.35;
+      if (musicOn) el.play().catch(() => {});
+      window.removeEventListener('pointerdown', start);
+    };
+    window.addEventListener('pointerdown', start);
+    return () => window.removeEventListener('pointerdown', start);
+  }, [musicOn]);
+
+  useEffect(() => {
+    const el = bgmRef.current;
+    if (!el) return;
+    el.volume = 0.35;
+    if (musicOn) el.play().catch(() => {});
+    else el.pause();
+    localStorage.setItem('west-bgm', JSON.stringify(musicOn));
+  }, [musicOn]);
+
+  const toggleSnd = () => {
+    const next = !sndOn;
+    setSndOn(next);
+    setSfx(next);
+  };
 
   return (
     <main>
-      <h1>⚔️ 决斗怪兽 · 类游戏王卡牌对战</h1>
+      <h1>☯ 西游斗法 · 人机对战</h1>
       <p className="sub">
-        LP 8000 · 每回合抽 1 张 · 每回合 1 次通常召唤（5★需 1 祭品 / 7★需 2 祭品，
-        祭品自动选择） · 先手首回合不能攻击 · LP 归零或卡组抽干判负
+        你执「取经人」，AI 执「妖魔主」 · 法力 8000 · 每回合抽 1 张 ·
+        每回合 1 次通常召唤（5★需 1 祭品 / 7★需 2 祭品） ·
+        先手首回合不能攻击 · 法力归零或卡组抽干判负
       </p>
       <div className="toolbar">
         <button className="newgame" onClick={() => setMatchN((n) => n + 1)}>
           🔄 重新开局
         </button>
-        <span className="toolbar-hint">左 = 玩家 0 视角，右 = 玩家 1 视角（各看各的手牌）</span>
+        <button className={`toggle ${musicOn ? 'on' : ''}`} onClick={() => setMusicOn((v) => !v)}>
+          {musicOn ? '🎵 音乐开' : '🔇 音乐关'}
+        </button>
+        <button className={`toggle ${sndOn ? 'on' : ''}`} onClick={toggleSnd}>
+          {sndOn ? '🔊 音效开' : '🔇 音效关'}
+        </button>
+        <span className="toolbar-hint">对手：AI 妖魔主（回合内自动行动，稍候片刻）</span>
       </div>
-      <div className="duel">
-        <App key={`p0-${matchN}`} matchID={`duel-${matchN}`} playerID="0" />
-        <App key={`p1-${matchN}`} matchID={`duel-${matchN}`} playerID="1" />
+      <audio ref={bgmRef} src={bgmUrl} loop preload="auto" />
+      <div className="duel solo">
+        <App key={`p0-${matchN}`} matchID={matchID} playerID="0" />
       </div>
+      {/* 版本角标：确认浏览器运行的是最新代码（Vite HMR 可能不完整，刷新后此号会变） */}
+      <div className="version-badge">v3 · 演出版</div>
     </main>
   );
 }

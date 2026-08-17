@@ -226,6 +226,31 @@ test('first move fills the cell', () => {
 });
 ```
 
+## Building a NEW game: copy, don't rewrite (CRITICAL)
+
+**The #1 mistake** when building a new boardgame.io game is rewriting the
+engine from scratch. This has failed every time it was attempted. Instead:
+
+1. **Start from a working game** (journey-west or card-game template)
+2. **Only change the theme** (cards, names, story text, CSS colors)
+3. **Keep the engine architecture identical**: same `game.js` structure,
+   same `bot.js` pattern, same `board.jsx` layout, same `index.jsx` setup
+4. **Test in a real browser after EVERY change** — unit tests passing
+   does NOT mean the browser experience works
+
+**The proven architecture for single-player vs AI:**
+- `index.jsx`: `multiplayer: Local()` + `createBossClient` (bot subscribes
+  and acts on player 1's turn)
+- `game.js`: `endIf` for victory, `playerView` for hidden info,
+  `turn.onBegin` for draw/reset, `events.endTurn()` for turn cycling
+- `bot.js`: scripted AI that calls `client.moves.*` on its turn
+- Removing `multiplayer: Local()` kills the AI opponent — never do this
+  to "fix" click issues (the click issue is elsewhere)
+
+**Story mode as a wrapper:** Use `G.mode` ('menu' | 'story' | 'battle')
+to switch UI views in board.jsx. The battle engine doesn't know about
+story — it's purely a UI layer.
+
 ## Ready-made project skeleton
 
 Two ready-made skeletons live under `assets/templates/` (both vite +

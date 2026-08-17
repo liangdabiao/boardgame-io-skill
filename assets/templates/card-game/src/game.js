@@ -73,8 +73,8 @@ function firstEmptySlot(p) {
   return p.field.findIndex((s) => s === null);
 }
 
-export const DuelMonsters = {
-  name: 'duel-monsters',
+export const JourneyWestDuel = {
+  name: 'journey-west-duel',
 
   setup: ({ random }) => {
     const G = { players: { 0: makePlayer(), 1: makePlayer() }, step: 'main' };
@@ -147,10 +147,18 @@ export const DuelMonsters = {
         const effect = CARDS[cardId].effect;
         if (effect === 'draw2') {
           drawCards(G, playerID, 2);
-        } else if (effect === 'raigeki') {
-          for (let i = 0; i < opp.field.length; i++) {
-            destroySlot(G, opponentOf(playerID), i);
-          }
+        } else if (effect === 'jingu') {
+          // 紧箍咒：破坏对方场上攻击力最高的一只神魔
+          let bestSlot = -1;
+          let bestAtk = -1;
+          opp.field.forEach((entry, i) => {
+            if (entry && CARDS[entry.card].atk > bestAtk) {
+              bestAtk = CARDS[entry.card].atk;
+              bestSlot = i;
+            }
+          });
+          if (bestSlot === -1) return INVALID_MOVE; // 对方场上没有神魔
+          destroySlot(G, opponentOf(playerID), bestSlot);
         } else if (effect === 'heal') {
           p.lp += 1000;
         } else if (effect === 'reborn') {
@@ -259,4 +267,4 @@ export const DuelMonsters = {
   },
 };
 
-export default DuelMonsters;
+export default JourneyWestDuel;
