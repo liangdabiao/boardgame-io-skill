@@ -1,0 +1,202 @@
+:root {
+  --gold: #d4af37;
+  --panel: #141a2e;
+  --bg: #0b0f1d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #e8e6f0;
+  font-family: system-ui, 'Microsoft YaHei', sans-serif;
+}
+
+main { max-width: 1100px; margin: 0 auto; padding: 8px; }
+h1 { text-align: center; color: var(--gold); font-size: 1.3rem; margin: 4px 0; }
+.sub { text-align: center; color: #9aa0b5; font-size: 0.85rem; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 4px 0 8px;
+}
+.newgame {
+  background: var(--gold);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.newgame:hover { filter: brightness(1.15); }
+.toolbar-hint { color: #9aa0b5; font-size: 0.8rem; }
+
+.duel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.board {
+  position: relative;
+  background: var(--panel);
+  border: 2px solid #2a3352;
+  border-radius: 12px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+.board.active { border-color: var(--gold); box-shadow: 0 0 18px rgba(212, 175, 55, 0.25); }
+
+.gameover {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.82);
+  border-radius: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--gold);
+}
+
+.board-head { display: flex; justify-content: space-between; font-size: 0.85rem; }
+.player-tag { color: var(--gold); font-weight: bold; }
+.step { color: #9aa0b5; }
+
+.zone-label {
+  font-size: 0.7rem;
+  color: #6b7395;
+  text-align: center;
+  letter-spacing: 2px;
+}
+.zone-label.mine { color: #8fa3d9; }
+
+.field {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 104px;
+}
+
+.hand {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  min-height: 56px;
+  flex-wrap: wrap;
+}
+.my-zone .hand { min-height: 110px; }
+
+.card {
+  width: 76px;
+  height: 100px;
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  cursor: default;
+  border: 2px solid #555;
+  background: linear-gradient(160deg, #2b3450, #1a2038);
+  font-size: 0.62rem;
+  transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s;
+}
+.card.monster { border-color: #c56cf0; }
+.card.spell { border-color: #2ecc71; }
+.card.back {
+  background: repeating-linear-gradient(45deg, #232a45, #232a45 6px, #1b2138 6px, #1b2138 12px);
+  border-color: #6b5b95;
+}
+.card.empty {
+  border: 2px dashed #3a4368;
+  background: transparent;
+}
+.card.small { width: 38px; height: 52px; }
+
+.card-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.card-name { font-weight: bold; margin-bottom: 4px; position: relative; z-index: 1; }
+.card-stats { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
+.card-stats .atk { color: #ff7675; font-weight: bold; text-align: right; }
+.card-stats .lv { color: var(--gold); font-size: 0.6rem; letter-spacing: -1px; }
+.card-desc { color: #b8c0d9; font-size: 0.54rem; }
+
+.card.hl { border-color: var(--gold); box-shadow: 0 0 8px var(--gold); cursor: pointer; }
+.card.usable { cursor: pointer; }
+.card.usable:hover {
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+}
+.card.sel { outline: 3px solid var(--gold); outline-offset: 1px; }
+.card.done { opacity: 0.45; }
+
+/* 手牌整体在不可操作时变暗（对方回合 / 战斗阶段由 usable 单卡控制） */
+.my-zone .hand .card:not(.usable):not(.back) { opacity: 0.55; }
+
+.lp-bar { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+.lp-track { flex: 1; height: 10px; background: #333; border-radius: 5px; overflow: hidden; }
+.lp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #27ae60, #2ecc71);
+  transition: width 0.4s;
+}
+.foe .lp-fill { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.lp-bar b { min-width: 48px; text-align: right; }
+
+.divider { text-align: center; color: #6b7395; font-size: 0.8rem; }
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  min-height: 36px;
+  border-top: 1px solid #262f4d;
+  padding-top: 8px;
+}
+.controls button {
+  background: var(--gold);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.controls button:disabled { opacity: 0.35; cursor: default; }
+.controls button.danger { background: #e74c3c; color: #fff; }
+.controls button:hover:not(:disabled) { filter: brightness(1.12); }
+
+.status {
+  flex-basis: 100%;
+  color: #cdd5ee;
+  font-size: 0.78rem;
+  min-height: 1.2em;
+}
+.gy-count { color: #6b7395; font-size: 0.75rem; }
+
+.gy-picker {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #b8c0d9;
+  flex-basis: 100%;
+}
