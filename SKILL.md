@@ -305,10 +305,11 @@ clicks badly. Before calling a game "playable":
 Read `references/game-feel.md` before adding sound/animation/showcase work.
 The non-negotiables:
 
-- [ ] **Hidden-info or AI-opponent games need an action narration layer**
-      — battle log + visible field animations + sfx. (Center-stage popup
-      showcases were tried and removed in a real project; if attempted
-      anyway: never queue popups, and expect positioning trouble — see
-      `references/game-feel.md`.)
+- [ ] **Every important action gets an on-screen notification — players
+      do not read battle logs.** Confirmed tiered scheme: card-duel popup
+      (both cards + outcome badges) for monster battles, card popup for
+      opponent summons/board spells, text popup for everything else
+      (direct attacks, draws, heals). One popup per event, never queued,
+      never delayed sequences; match AI pacing to popup duration.
 - [ ] SFX: Web Audio synthesis (zero assets), unlocked on first pointer
       interaction, mute persisted; BGM separate toggle.
